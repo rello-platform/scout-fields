@@ -34,9 +34,14 @@
  * See SPEC-RELLO-PLATFORM-SCOUT-FIELDS-PACKAGE.md §4.H.
  */
 /**
- * Tier 1 — Milo-aware (7 fields). Each entry has a real or one-hop-derived
+ * Tier 1 — Milo-aware (9 fields). Each entry has a real or one-hop-derived
  * Milo nurture-rule consumer. Adding to this array requires citing the
  * consumer file:line in the PR description.
+ *
+ * v0.2.0 (2026-05-14) promoted `scout_loan_purpose` + `scout_referral_source`
+ * from Tier 2 (`RELLO_REGISTERED_FIELDS`) following Milo Engine Wave 2
+ * consumer wire-up: R4 `applyR4ReferralSource` + R6 `applyR6LoanPurposeRouting`
+ * in `~/Milo-Engine/src/lib/contact-form-intent.ts`.
  */
 export const MILO_AWARE_FIELDS = [
     {
@@ -108,14 +113,6 @@ export const MILO_AWARE_FIELDS = [
         ],
         defaultForRoles: ["MLO"],
     },
-];
-/**
- * Tier 2 — Rello-registered (2 fields). Persists to Lead canonical columns
- * or `Lead.customFields` but no current Milo nurture-rule consumer.
- * Promotion to Tier 1 when Milo gains a consumer — verify consumer existence
- * at promotion time and cite the consumer file:line in the PR description.
- */
-export const RELLO_REGISTERED_FIELDS = [
     {
         key: "scout_loan_purpose",
         label: "Loan purpose",
@@ -130,6 +127,16 @@ export const RELLO_REGISTERED_FIELDS = [
         defaultForRoles: ["BROKER"],
     },
 ];
+/**
+ * Tier 2 — Rello-registered (0 fields as of v0.2.0). Reserved for future
+ * fields that persist to `Lead` canonical columns or `Lead.customFields` but
+ * have no Milo nurture-rule consumer yet. Promotion to Tier 1 requires
+ * citing the consumer file:line per the header rule.
+ *
+ * v0.2.0 (2026-05-14) promoted `scout_loan_purpose` + `scout_referral_source`
+ * to Tier 1 following Milo Engine Wave 2 consumer wire-up.
+ */
+export const RELLO_REGISTERED_FIELDS = [];
 /**
  * Resolve a stored field-key to its registry definition. Searches Tier 1
  * first, then Tier 2. Returns null for unknown keys (typically

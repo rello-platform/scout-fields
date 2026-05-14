@@ -5,7 +5,7 @@ Canonical `scout_*` nurture-field registry for the Rello ecosystem. A single sou
 ## Install
 
 ```bash
-npm install "github:rello-platform/scout-fields#v0.1.0"
+npm install "github:rello-platform/scout-fields#v0.2.0"
 ```
 
 ## Usage
@@ -62,8 +62,8 @@ Two registered tiers ship in this package. A third tier — custom MLO-only `sco
 
 | Tier | Constant | Cardinality | Meaning |
 |------|----------|-------------|---------|
-| 1 | `MILO_AWARE_FIELDS` | 7 | Has a real or one-hop-derived Milo nurture-rule consumer |
-| 2 | `RELLO_REGISTERED_FIELDS` | 2 | Persisted but no current Milo consumer (promoted to Tier 1 when one lands) |
+| 1 | `MILO_AWARE_FIELDS` | 9 | Has a real or one-hop-derived Milo nurture-rule consumer |
+| 2 | `RELLO_REGISTERED_FIELDS` | 0 | Persisted but no current Milo consumer (promoted to Tier 1 when one lands; empty array reserved for future Tier-2 fields) |
 | 3 | _(consumer-local)_ | n/a | `scout_contact_<slug>` admin-bespoke fields — `fieldTier()` returns `"custom-mlo"` and `resolveFieldDefinition()` returns `null` |
 
 Tier-membership is structurally enforced via which array a field appears in. There is no per-field boolean flag.
@@ -77,6 +77,7 @@ Tier-membership is structurally enforced via which array a field appears in. The
 
 ## Versioning
 
-- `v0.1.0` — initial extraction; arrays + types + helpers lifted verbatim from HS canonical. Tier-3 plumbing (`CUSTOM_MLO_FIELD_PREFIX` + `deriveCustomFieldKey`) intentionally stays HS-local.
+- `v0.2.0` (2026-05-14) — Tier promotion: `scout_loan_purpose` + `scout_referral_source` moved from `RELLO_REGISTERED_FIELDS` → `MILO_AWARE_FIELDS` following Milo Engine Wave 2 consumer wire-up (`~/Milo-Engine/src/lib/contact-form-intent.ts` — R6 `applyR6LoanPurposeRouting` @ commit `1416f29`; R4 `applyR4ReferralSource` @ commit `1714867`). Per the package's documented Tier-2→Tier-1 promotion rule. `MILO_AWARE_FIELDS` now has 9 entries (was 7); `RELLO_REGISTERED_FIELDS` is empty (was 2 — preserved as forward-compat reservation).
+- `v0.1.0` (2026-05-14) — initial extraction; arrays + types + helpers lifted verbatim from HS canonical. Tier-3 plumbing (`CUSTOM_MLO_FIELD_PREFIX` + `deriveCustomFieldKey`) intentionally stays HS-local. 7 Tier-1 + 2 Tier-2 fields.
 
 v0.x is reserved for additive entries, new helpers, or new types. v1.0 is deferred until the first breaking change (e.g. `NurtureFieldDefinition` shape change or array entry removal). Consumer pin bumps are atomic with package tags — the same wave PR that tags a new version also bumps `package.json` pins in every consumer.
