@@ -32,6 +32,20 @@
  * Provenance: lifted verbatim from
  * `~/The-Home-Scout/src/lib/nurture-field-catalog.ts` (HS canonical).
  * See SPEC-RELLO-PLATFORM-SCOUT-FIELDS-PACKAGE.md §4.H.
+ *
+ * v0.3.0 (2026-05-14): `options` entries are `{ value, label }` pairs.
+ * Storage uses the slug-form `value` platform-wide (`Lead.customFields`,
+ * HH `EnrichedLead.*Intent` typed columns, Milo nurture-rule eval). The
+ * human-readable `label` is render-only — used by HS contact-form widget,
+ * HS admin form-builder, and Rello CRM Custom Data panel display.
+ * Promoting any new enum option or renaming an existing `value` is a
+ * SemVer-MAJOR change (consumers' switch-cases / DB rows reference value).
+ *
+ * Migration provenance: see
+ * `BUILD-|-FEATURE-ADDS/HH-INTAKE-CONTACT-FORM-INTENT-PASSTHROUGH/ANSWERS-PR-2-SCOPE-LOCKS.md`
+ * Q1 lock — option (iii) catalog flip as the durable normalization fix
+ * for the HS-widget-submits-labels vs. HH-coerce-expects-slugs gap that
+ * PR-1 (HH 82d2cd7) exposed.
  */
 export type TenantOwnerRole = "MLO" | "BROKER" | "AGENT";
 export type ContactFormFieldType = "text" | "email" | "phone" | "textarea" | "select";
@@ -42,7 +56,10 @@ export interface NurtureFieldDefinition {
     label: string;
     type: ContactFormFieldType;
     /** Select options (only when `type === "select"`). */
-    options?: readonly string[];
+    options?: readonly {
+        value: string;
+        label: string;
+    }[];
     /** Baseline required-state (admin can override). */
     required?: boolean;
     /** Which roles get this field in their starter default set. */

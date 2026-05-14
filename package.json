@@ -1,6 +1,6 @@
 {
   "name": "@rello-platform/scout-fields",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Canonical scout_* nurture-field registry for the Rello ecosystem — widget-capture truth shared between Home Scout, Rello CRM, and Milo Engine.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

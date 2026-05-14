@@ -32,6 +32,20 @@
  * Provenance: lifted verbatim from
  * `~/The-Home-Scout/src/lib/nurture-field-catalog.ts` (HS canonical).
  * See SPEC-RELLO-PLATFORM-SCOUT-FIELDS-PACKAGE.md §4.H.
+ *
+ * v0.3.0 (2026-05-14): `options` entries are `{ value, label }` pairs.
+ * Storage uses the slug-form `value` platform-wide (`Lead.customFields`,
+ * HH `EnrichedLead.*Intent` typed columns, Milo nurture-rule eval). The
+ * human-readable `label` is render-only — used by HS contact-form widget,
+ * HS admin form-builder, and Rello CRM Custom Data panel display.
+ * Promoting any new enum option or renaming an existing `value` is a
+ * SemVer-MAJOR change (consumers' switch-cases / DB rows reference value).
+ *
+ * Migration provenance: see
+ * `BUILD-|-FEATURE-ADDS/HH-INTAKE-CONTACT-FORM-INTENT-PASSTHROUGH/ANSWERS-PR-2-SCOPE-LOCKS.md`
+ * Q1 lock — option (iii) catalog flip as the durable normalization fix
+ * for the HS-widget-submits-labels vs. HH-coerce-expects-slugs gap that
+ * PR-1 (HH 82d2cd7) exposed.
  */
 /**
  * Tier 1 — Milo-aware (9 fields). Each entry has a real or one-hop-derived
@@ -57,11 +71,11 @@ export const MILO_AWARE_FIELDS = [
         label: "What are you looking to do?",
         type: "select",
         options: [
-            "Looking to buy",
-            "Looking to sell",
-            "Refinance",
-            "Pre-approval",
-            "General question",
+            { value: "looking-to-buy", label: "Looking to buy" },
+            { value: "looking-to-sell", label: "Looking to sell" },
+            { value: "refinance", label: "Refinance" },
+            { value: "pre-approval", label: "Pre-approval" },
+            { value: "general-question", label: "General question" },
         ],
         defaultForRoles: ["BROKER", "AGENT"],
     },
@@ -70,10 +84,10 @@ export const MILO_AWARE_FIELDS = [
         label: "Where are you in the process?",
         type: "select",
         options: [
-            "Signed purchase agreement",
-            "2-6 months",
-            "Offer pending",
-            "Researching",
+            { value: "signed-purchase-agreement", label: "Signed purchase agreement" },
+            { value: "2-6-months", label: "2-6 months" },
+            { value: "offer-pending", label: "Offer pending" },
+            { value: "researching", label: "Researching" },
         ],
         defaultForRoles: ["MLO", "AGENT"],
     },
@@ -81,21 +95,35 @@ export const MILO_AWARE_FIELDS = [
         key: "scout_timeline",
         label: "When do you want to take action?",
         type: "select",
-        options: ["Immediate", "30 days", "60-90 days", "6+ months"],
+        options: [
+            { value: "immediate", label: "Immediate" },
+            { value: "30-days", label: "30 days" },
+            { value: "60-90-days", label: "60-90 days" },
+            { value: "6-plus-months", label: "6+ months" },
+        ],
         defaultForRoles: ["MLO", "BROKER", "AGENT"],
     },
     {
         key: "scout_preferred_contact_method",
         label: "How should we reach you?",
         type: "select",
-        options: ["Phone", "Text", "Email"],
+        options: [
+            { value: "phone", label: "Phone" },
+            { value: "text", label: "Text" },
+            { value: "email", label: "Email" },
+        ],
         defaultForRoles: ["BROKER"],
     },
     {
         key: "scout_property_type",
         label: "Property type",
         type: "select",
-        options: ["Single Family", "Condo", "Town Home", "Multi-Family"],
+        options: [
+            { value: "single-family", label: "Single Family" },
+            { value: "condo", label: "Condo" },
+            { value: "townhome", label: "Town Home" },
+            { value: "multi-family", label: "Multi-Family" },
+        ],
         defaultForRoles: ["AGENT"],
     },
     {
@@ -103,13 +131,13 @@ export const MILO_AWARE_FIELDS = [
         label: "Estimated credit score",
         type: "select",
         options: [
-            "780+",
-            "740-779",
-            "700-739",
-            "660-699",
-            "620-659",
-            "580-619",
-            "Below 580",
+            { value: "780-plus", label: "780+" },
+            { value: "740-779", label: "740-779" },
+            { value: "700-739", label: "700-739" },
+            { value: "660-699", label: "660-699" },
+            { value: "620-659", label: "620-659" },
+            { value: "580-619", label: "580-619" },
+            { value: "below-580", label: "Below 580" },
         ],
         defaultForRoles: ["MLO"],
     },
@@ -117,7 +145,10 @@ export const MILO_AWARE_FIELDS = [
         key: "scout_loan_purpose",
         label: "Loan purpose",
         type: "select",
-        options: ["Purchase", "Refinance"],
+        options: [
+            { value: "purchase", label: "Purchase" },
+            { value: "refinance", label: "Refinance" },
+        ],
         defaultForRoles: ["MLO"],
     },
     {
