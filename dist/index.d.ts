@@ -68,7 +68,7 @@ export interface NurtureFieldDefinition {
     description?: string;
 }
 /**
- * Tier 1 — Milo-aware (9 fields). Each entry has a real or one-hop-derived
+ * Tier 1 — Milo-aware (42 fields). Each entry has a real or one-hop-derived
  * Milo nurture-rule consumer. Adding to this array requires citing the
  * consumer file:line in the PR description.
  *
@@ -76,8 +76,27 @@ export interface NurtureFieldDefinition {
  * from Tier 2 (`RELLO_REGISTERED_FIELDS`) following Milo Engine Wave 2
  * consumer wire-up: R4 `applyR4ReferralSource` + R6 `applyR6LoanPurposeRouting`
  * in `~/Milo-Engine/src/lib/contact-form-intent.ts`.
+ *
+ * v0.4.0 (2026-06-15) added 33 role-gated catalog fields (9 baseline → 42;
+ * NURTURE-AUDIT 06142026 STEP 1) — byte-matched to the HS forward-contract
+ * catalog. One-hop consumer for all 33: `renderScoutValue` →
+ * `resolveFieldDefinition` in `~/Milo-Engine/src/lib/composition-prompt.ts:1880`.
+ * One of them (`scout_age_62_plus`) is COMPLIANCE-HELD — see
+ * `COMPLIANCE_HOLD_KEYS`.
  */
 export declare const MILO_AWARE_FIELDS: readonly NurtureFieldDefinition[];
+/**
+ * Keys that are registered (so the slug enum is shared platform-wide) but
+ * carry a COMPLIANCE-HOLD: they are prohibited-basis or otherwise
+ * counsel-gated and MUST NOT be consumed by any nurture branching / inference
+ * / targeting until counsel signs off. Registry membership ≠ branching
+ * authorization. STEP 2 (branching) MUST exclude every key in this set.
+ *
+ * Currently: `scout_age_62_plus` (age — ECOA/Reg B prohibited basis; HECM).
+ */
+export declare const COMPLIANCE_HOLD_KEYS: ReadonlySet<string>;
+/** True if `key` is registered but compliance-held (do NOT branch on it). */
+export declare function isComplianceHold(key: string): boolean;
 /**
  * Tier 2 — Rello-registered (0 fields as of v0.2.0). Reserved for future
  * fields that persist to `Lead` canonical columns or `Lead.customFields` but

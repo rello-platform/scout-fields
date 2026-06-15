@@ -74,7 +74,7 @@ export interface NurtureFieldDefinition {
 }
 
 /**
- * Tier 1 — Milo-aware (9 fields). Each entry has a real or one-hop-derived
+ * Tier 1 — Milo-aware (42 fields). Each entry has a real or one-hop-derived
  * Milo nurture-rule consumer. Adding to this array requires citing the
  * consumer file:line in the PR description.
  *
@@ -82,6 +82,13 @@ export interface NurtureFieldDefinition {
  * from Tier 2 (`RELLO_REGISTERED_FIELDS`) following Milo Engine Wave 2
  * consumer wire-up: R4 `applyR4ReferralSource` + R6 `applyR6LoanPurposeRouting`
  * in `~/Milo-Engine/src/lib/contact-form-intent.ts`.
+ *
+ * v0.4.0 (2026-06-15) added 33 role-gated catalog fields (9 baseline → 42;
+ * NURTURE-AUDIT 06142026 STEP 1) — byte-matched to the HS forward-contract
+ * catalog. One-hop consumer for all 33: `renderScoutValue` →
+ * `resolveFieldDefinition` in `~/Milo-Engine/src/lib/composition-prompt.ts:1880`.
+ * One of them (`scout_age_62_plus`) is COMPLIANCE-HELD — see
+ * `COMPLIANCE_HOLD_KEYS`.
  */
 export const MILO_AWARE_FIELDS: readonly NurtureFieldDefinition[] = [
   {
@@ -184,7 +191,416 @@ export const MILO_AWARE_FIELDS: readonly NurtureFieldDefinition[] = [
     type: "text",
     defaultForRoles: ["BROKER"],
   },
+
+  // -------------------------------------------------------------------------
+  // v0.4.0 (2026-06-15) — NURTURE-AUDIT 06142026 STEP 1.
+  //
+  // Registers the role-gated contact-question catalog Home Scout shipped as a
+  // forward contract at `~/The-Home-Scout/src/lib/contact-question-catalog.ts`
+  // (HS @ a08db41). Option `value`s here BYTE-MATCH the HS catalog's `opts()`
+  // slugifier (`label.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")`)
+  // so HS, Rello, and Milo share one enum and a rename is a compile error.
+  //
+  // All entries are Tier-1 (Milo-aware): every key reaches Milo's
+  // `renderScoutValue` slug→label resolver via `resolveFieldDefinition` in
+  // `~/Milo-Engine/src/lib/composition-prompt.ts:1880` (one-hop consumer — the
+  // citation the header rule requires). STEP 2 (a separate agent) wires the
+  // nurture-branching consumers; do NOT add branching logic here.
+  //
+  // Role-gating mirrors the HS catalog pack roles: mortgage packs → MLO/BROKER
+  // hats; real-estate packs → AGENT hat (see `resolveCatalogAccess` in the HS
+  // catalog). `defaultForRoles` reflects that gate.
+
+  // ===== MORTGAGE (MLO / BROKER) =====
+  // Qualifying
+  {
+    key: "scout_down_payment",
+    label: "Down payment saved",
+    type: "select",
+    options: [
+      { value: "none-yet", label: "None yet" },
+      { value: "under-5", label: "Under 5%" },
+      { value: "5-10", label: "5–10%" },
+      { value: "10-20", label: "10–20%" },
+      { value: "20", label: "20%+" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  {
+    key: "scout_first_time_buyer",
+    label: "First-time buyer?",
+    type: "select",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  {
+    key: "scout_price_range",
+    label: "Price range you're considering",
+    type: "select",
+    options: [
+      { value: "under-300k", label: "Under $300k" },
+      { value: "300-500k", label: "$300–500k" },
+      { value: "500-750k", label: "$500–750k" },
+      { value: "750k-1m", label: "$750k–1M" },
+      { value: "1m", label: "$1M+" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  {
+    key: "scout_pre_approved",
+    label: "Already pre-approved?",
+    type: "select",
+    options: [
+      { value: "no", label: "No" },
+      { value: "with-another-lender", label: "With another lender" },
+      { value: "yes", label: "Yes" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  {
+    key: "scout_occupancy",
+    label: "Primary, second home, or investment?",
+    type: "select",
+    options: [
+      { value: "primary-residence", label: "Primary residence" },
+      { value: "second-home", label: "Second home" },
+      { value: "investment", label: "Investment" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  // Self-employed → Bank Statement cockpit
+  {
+    key: "scout_income_type",
+    label: "How are you paid?",
+    type: "select",
+    options: [
+      { value: "w-2-employee", label: "W-2 employee" },
+      { value: "self-employed", label: "Self-employed" },
+      { value: "1099-contractor", label: "1099 contractor" },
+      { value: "business-owner", label: "Business owner" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  {
+    key: "scout_years_self_employed",
+    label: "Years self-employed",
+    type: "select",
+    options: [
+      { value: "under-1", label: "Under 1" },
+      { value: "1-2", label: "1–2" },
+      { value: "2", label: "2+" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  {
+    key: "scout_files_tax_returns",
+    label: "Do you file 2 years of tax returns?",
+    type: "select",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  // Investor → DSCR / Non-QM cockpit
+  {
+    key: "scout_is_investment",
+    label: "Is this an investment property?",
+    type: "select",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  {
+    key: "scout_rentals_owned",
+    label: "How many rentals do you own?",
+    type: "select",
+    options: [
+      { value: "0", label: "0" },
+      { value: "1-3", label: "1–3" },
+      { value: "4", label: "4+" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  {
+    key: "scout_expected_rent",
+    label: "Expected monthly rent",
+    type: "text",
+    defaultForRoles: ["MLO", "BROKER"],
+    description:
+      "Numeric monthly rent. HS catalog declares type 'number'; the package " +
+      "ContactFormFieldType has no 'number' member, so it is registered as " +
+      "free-text (no options) — the value is the raw amount either way.",
+  },
+  {
+    key: "scout_buying_in_llc",
+    label: "Buying in an LLC?",
+    type: "select",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  // VA cockpit
+  {
+    key: "scout_va_eligible",
+    label: "Veteran, active-duty, or eligible spouse?",
+    type: "select",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  {
+    key: "scout_va_first_use",
+    label: "Used your VA benefit before?",
+    type: "select",
+    options: [
+      { value: "first-use", label: "First use" },
+      { value: "used-before", label: "Used before" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  // Construction loan
+  {
+    key: "scout_construction_type",
+    label: "Building, buying, or renovating?",
+    type: "select",
+    options: [
+      { value: "building", label: "Building" },
+      { value: "buying", label: "Buying" },
+      { value: "renovating", label: "Renovating" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  {
+    key: "scout_owns_lot",
+    label: "Do you own the lot?",
+    type: "select",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  // Refinance nurture
+  {
+    key: "scout_current_rate",
+    label: "Roughly your current rate?",
+    type: "select",
+    options: [
+      { value: "under-4", label: "Under 4%" },
+      { value: "4-5", label: "4–5%" },
+      { value: "5-6", label: "5–6%" },
+      { value: "6-7", label: "6–7%" },
+      { value: "7", label: "7%+" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+  {
+    key: "scout_refi_goal",
+    label: "Refinance goal",
+    type: "select",
+    options: [
+      { value: "lower-payment", label: "Lower payment" },
+      { value: "cash-out", label: "Cash out" },
+      { value: "drop-mortgage-insurance", label: "Drop mortgage insurance" },
+      { value: "shorter-term", label: "Shorter term" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+
+  // ⚠️ COMPLIANCE-HOLD — scout_age_62_plus (HECM / reverse mortgage).
+  // Age is a PROHIBITED-BASIS attribute (ECOA/Reg B). This entry exists ONLY
+  // so HS, Rello, and Milo share the same registry key + enum; it is
+  // compliance-review-required and MUST NOT be wired into any nurture
+  // BRANCHING / inference / targeting until counsel signs off (STEP 2's rule
+  // too). It is deliberately ABSENT from `COMPLIANCE_HOLD_KEYS`-cleared
+  // active lists and from every HS preset (verified in the HS catalog tests).
+  // Registry membership ≠ branching authorization. Do NOT branch on it.
+  {
+    key: "scout_age_62_plus",
+    label: "Are you 62 or older?",
+    type: "select",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
+    ],
+    defaultForRoles: ["MLO", "BROKER"],
+  },
+
+  // ===== REAL ESTATE (AGENT) =====
+  // Buyer nurture
+  {
+    key: "scout_buy_sell",
+    label: "Buying, selling, or both?",
+    type: "select",
+    options: [
+      { value: "buying", label: "Buying" },
+      { value: "selling", label: "Selling" },
+      { value: "both", label: "Both" },
+    ],
+    defaultForRoles: ["AGENT"],
+  },
+  {
+    key: "scout_search_area",
+    label: "Areas you're interested in",
+    type: "text",
+    defaultForRoles: ["AGENT"],
+  },
+  {
+    key: "scout_re_price_range",
+    label: "Price range",
+    type: "select",
+    options: [
+      { value: "under-300k", label: "Under $300k" },
+      { value: "300-500k", label: "$300–500k" },
+      { value: "500-750k", label: "$500–750k" },
+      { value: "750k-1m", label: "$750k–1M" },
+      { value: "1m", label: "$1M+" },
+    ],
+    defaultForRoles: ["AGENT"],
+  },
+  {
+    key: "scout_beds_baths",
+    label: "Beds / baths needed",
+    type: "text",
+    defaultForRoles: ["AGENT"],
+  },
+  {
+    key: "scout_move_timeline",
+    label: "When do you want to move?",
+    type: "select",
+    options: [
+      { value: "immediate", label: "Immediate" },
+      { value: "1-3-mo", label: "1–3 mo" },
+      { value: "3-6-mo", label: "3–6 mo" },
+      { value: "6-mo", label: "6+ mo" },
+    ],
+    defaultForRoles: ["AGENT"],
+  },
+  {
+    key: "scout_rent_or_own",
+    label: "Do you rent or own now?",
+    type: "select",
+    options: [
+      { value: "rent", label: "Rent" },
+      { value: "own", label: "Own" },
+    ],
+    defaultForRoles: ["AGENT"],
+  },
+  {
+    key: "scout_working_with_agent",
+    label: "Working with another agent?",
+    type: "select",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
+    ],
+    defaultForRoles: ["AGENT"],
+  },
+  {
+    key: "scout_sell_before_buy",
+    label: "Need to sell before buying?",
+    type: "select",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
+    ],
+    defaultForRoles: ["AGENT"],
+  },
+  // Seller nurture
+  {
+    key: "scout_sell_reason",
+    label: "Why are you selling?",
+    type: "text",
+    defaultForRoles: ["AGENT"],
+  },
+  {
+    key: "scout_sell_timeline",
+    label: "When do you want to sell?",
+    type: "select",
+    options: [
+      { value: "immediate", label: "Immediate" },
+      { value: "1-3-mo", label: "1–3 mo" },
+      { value: "3-6-mo", label: "3–6 mo" },
+      { value: "6-mo", label: "6+ mo" },
+    ],
+    defaultForRoles: ["AGENT"],
+  },
+  {
+    key: "scout_found_next_home",
+    label: "Found your next home?",
+    type: "select",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
+    ],
+    defaultForRoles: ["AGENT"],
+  },
+  {
+    key: "scout_home_value_range",
+    label: "Estimated home value",
+    type: "select",
+    options: [
+      { value: "under-300k", label: "Under $300k" },
+      { value: "300-500k", label: "$300–500k" },
+      { value: "500-750k", label: "$500–750k" },
+      { value: "750k-1m", label: "$750k–1M" },
+      { value: "1m", label: "$1M+" },
+    ],
+    defaultForRoles: ["AGENT"],
+  },
+  {
+    key: "scout_amount_owed",
+    label: "Roughly what you owe",
+    type: "select",
+    options: [
+      { value: "under-300k", label: "Under $300k" },
+      { value: "300-500k", label: "$300–500k" },
+      { value: "500-750k", label: "$500–750k" },
+      { value: "750k-1m", label: "$750k–1M" },
+      { value: "1m", label: "$1M+" },
+    ],
+    defaultForRoles: ["AGENT"],
+  },
+  {
+    key: "scout_occupancy_status",
+    label: "Occupied, vacant, or tenant-occupied?",
+    type: "select",
+    options: [
+      { value: "owner-occupied", label: "Owner-occupied" },
+      { value: "vacant", label: "Vacant" },
+      { value: "tenant-occupied", label: "Tenant-occupied" },
+    ],
+    defaultForRoles: ["AGENT"],
+  },
 ] as const;
+
+/**
+ * Keys that are registered (so the slug enum is shared platform-wide) but
+ * carry a COMPLIANCE-HOLD: they are prohibited-basis or otherwise
+ * counsel-gated and MUST NOT be consumed by any nurture branching / inference
+ * / targeting until counsel signs off. Registry membership ≠ branching
+ * authorization. STEP 2 (branching) MUST exclude every key in this set.
+ *
+ * Currently: `scout_age_62_plus` (age — ECOA/Reg B prohibited basis; HECM).
+ */
+export const COMPLIANCE_HOLD_KEYS: ReadonlySet<string> = new Set([
+  "scout_age_62_plus",
+]);
+
+/** True if `key` is registered but compliance-held (do NOT branch on it). */
+export function isComplianceHold(key: string): boolean {
+  return COMPLIANCE_HOLD_KEYS.has(key);
+}
 
 /**
  * Tier 2 — Rello-registered (0 fields as of v0.2.0). Reserved for future
