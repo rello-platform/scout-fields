@@ -95,3 +95,7 @@ Currently held: `scout_age_62_plus` (age — ECOA / Reg B prohibited basis; HECM
 - `v0.1.0` (2026-05-14) — initial extraction; arrays + types + helpers lifted verbatim from HS canonical. Tier-3 plumbing (`CUSTOM_MLO_FIELD_PREFIX` + `deriveCustomFieldKey`) intentionally stays HS-local. 7 Tier-1 + 2 Tier-2 fields.
 
 v0.x is reserved for additive entries, new helpers, or new types. v1.0 is deferred until the first breaking change (e.g. `NurtureFieldDefinition` shape change or array entry removal). Consumer pin bumps are atomic with package tags — the same wave PR that tags a new version also bumps `package.json` pins in every consumer.
+
+## Contributor setup
+
+After cloning, run `npm run hooks` once to wire the husky hooks (`core.hooksPath .husky`). This used to be the `prepare` script; C-33 (2026-09-16) moved it off the `prepare` name because npm runs a nested, lockfile-less install inside every git dependency whose manifest carries `prepare` (or `build`), and one such install failed two app builds on a registry blip.
